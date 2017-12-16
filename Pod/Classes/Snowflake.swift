@@ -4,17 +4,18 @@
 //
 //  Created by Martin Rogalla.
 //
+//  Updated to Swift 4 by Dmitry Sokolov
 
 import UIKit
 
-class Snowflake : UIView {
+open class Snowflake : UIView {
     override init (frame : CGRect) {
         super.init(frame : frame)
-        self.backgroundColor = UIColor.whiteColor().colorWithAlphaComponent(0.7)
+        self.backgroundColor = UIColor.white.withAlphaComponent(0.7)
         self.layer.cornerRadius = CGFloat(self.frame.width/2)
         self.layer.borderWidth = 0.0
     }
-
+    
     convenience init (position : CGPoint, minimumSize : Int, maximumSize : Int) {
         let randomSize: CGFloat!
         
@@ -26,8 +27,9 @@ class Snowflake : UIView {
         }
         self.init(frame: CGRect(x: position.x, y: position.y, width: randomSize, height: randomSize))
     }
-
-    required init(coder aDecoder: NSCoder) {
+    
+    required public init(coder aDecoder: NSCoder) {
         fatalError("This class does not support NSCoding")
     }
 }
+
