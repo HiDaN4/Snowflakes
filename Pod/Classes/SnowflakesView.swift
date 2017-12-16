@@ -20,13 +20,14 @@ public class SnowflakesView : UIView {
     // added:
     var snowflakeMinSize: Int = 2
     var snowflakeMaxSize: Int = 4
+    var isRunning: Bool = false
     
     var timer : Timer?
     
     override public init (frame : CGRect) {
         super.init(frame : frame)
         initGravityAnimator()
-        timer = Timer.scheduledTimer(timeInterval: Double(arc4random_uniform(100))/100, target: self, selector: #selector(SnowflakesView.changeGravityDirection), userInfo: nil, repeats: true)
+        startSnowflow()
     }
     
     required public init(coder aDecoder: NSCoder) {
@@ -34,12 +35,41 @@ public class SnowflakesView : UIView {
     }
     
     
-    /// Let the client to specify the size of a snowflake
+    /// Specify the size of a snowflake
     public func setSnowflakeSize(minSize: Int, maxSize: Int) {
         self.snowflakeMinSize = minSize
         self.snowflakeMaxSize = maxSize
     }
     
+    
+    /// Force stop the view from displaying snowflakes
+    public func stopSnowflow() {
+        
+        if let timer = self.timer {
+            if timer.isValid {
+                timer.invalidate()
+            }
+        }
+        
+        self.timer = nil
+        self.isRunning = false
+        
+        // remove all snowflakes from superview
+        for view in self.snowflakes {
+            view.removeFromSuperview()
+        }
+        self.snowflakes.removeAll()
+    }
+    
+    
+    /// Start displaying snowflakes
+    public func startSnowflow() {
+        if self.isRunning { return }  // do nothing if timer is already running
+        
+        timer = Timer.scheduledTimer(timeInterval: Double(arc4random_uniform(100))/100, target: self, selector: #selector(SnowflakesView.changeGravityDirection), userInfo: nil, repeats: true)
+        
+        self.isRunning = true
+    }
     
     
     func initGravityAnimator() {
@@ -56,6 +86,9 @@ public class SnowflakesView : UIView {
     }
     
     func changeGravityDirection() {
+        
+        guard self.isRunning else { return } // if the timer is stopped, do nothing
+        
         DispatchQueue.main.async {
             if self.gravityPullRight { // Simulate wind, by changing gravity direction.
                 self.gravityBehaviour1.gravityDirection.dx += 0.4
@@ -66,6 +99,7 @@ public class SnowflakesView : UIView {
             }
             self.gravityPullRight = !self.gravityPullRight
         }
+        
         if (self.snowflakes.count < 150) {
             DispatchQueue.main.async {
                 self.addNewSnowflake()
@@ -99,8 +133,10 @@ public class SnowflakesView : UIView {
             snowflake.removeFromSuperview()
             self.snowflakes = self.snowflakes.filter { item in return item != snowflake }
             
-            // Spawn a new snowflake
-            self.addNewSnowflake()
+            if self.isRunning {
+                // Spawn a new snowflake
+                self.addNewSnowflake()
+            }
         }
     }
     
